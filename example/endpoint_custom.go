@@ -4,8 +4,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/gswly/gomavlib"
-	"github.com/gswly/gomavlib/dialects/ardupilotmega"
+
+	"github.com/aler9/gomavlib"
+	"github.com/aler9/gomavlib/dialects/ardupilotmega"
 )
 
 // this is an example struct that implements io.ReadWriteCloser.
@@ -53,6 +54,7 @@ func main() {
 			gomavlib.EndpointCustom{endpoint},
 		},
 		Dialect:     ardupilotmega.Dialect,
+		OutVersion:  gomavlib.V2, // change to V1 if you're unable to write to the target
 		OutSystemId: 10,
 	})
 	if err != nil {
@@ -63,6 +65,7 @@ func main() {
 	// queue a dummy message
 	endpoint.readChan <- []byte("\xfd\t\x01\x00\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x01\x02\x03\x05\x03\xd9\xd1\x01\x02\x00\x00\x00\x00\x00\x0eG\x04\x0c\xef\x9b")
 
+	// print every message we receive
 	for evt := range node.Events() {
 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
 			fmt.Printf("received: id=%d, %+v\n", frm.Message().GetId(), frm.Message())

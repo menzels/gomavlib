@@ -2,12 +2,13 @@ package gomavlib
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/require"
 	"io"
 	"reflect"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func doTest(t *testing.T, t1 EndpointConf, t2 EndpointConf) {
@@ -46,6 +47,7 @@ func doTest(t *testing.T, t1 EndpointConf, t2 EndpointConf) {
 
 	node1, err := NewNode(NodeConf{
 		Dialect:          MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:       V2,
 		OutSystemId:      10,
 		Endpoints:        []EndpointConf{t1},
 		HeartbeatDisable: true,
@@ -54,6 +56,7 @@ func doTest(t *testing.T, t1 EndpointConf, t2 EndpointConf) {
 
 	node2, err := NewNode(NodeConf{
 		Dialect:          MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:       V2,
 		OutSystemId:      11,
 		Endpoints:        []EndpointConf{t2},
 		HeartbeatDisable: true,
@@ -191,6 +194,7 @@ func TestNodeCustomCustom(t *testing.T) {
 func TestNodeError(t *testing.T) {
 	_, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 11,
 		Endpoints: []EndpointConf{
 			EndpointUdpServer{"127.0.0.1:5600"},
@@ -204,6 +208,7 @@ func TestNodeError(t *testing.T) {
 func TestNodeCloseInLoop(t *testing.T) {
 	node1, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 11,
 		Endpoints: []EndpointConf{
 			EndpointUdpServer{"127.0.0.1:5600"},
@@ -214,6 +219,7 @@ func TestNodeCloseInLoop(t *testing.T) {
 
 	node2, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 11,
 		Endpoints: []EndpointConf{
 			EndpointUdpClient{"127.0.0.1:5600"},
@@ -248,6 +254,7 @@ func TestNodeCloseInLoop(t *testing.T) {
 func TestNodeWriteMultipleInLoop(t *testing.T) {
 	node1, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 11,
 		Endpoints: []EndpointConf{
 			EndpointUdpServer{"127.0.0.1:5600"},
@@ -258,6 +265,7 @@ func TestNodeWriteMultipleInLoop(t *testing.T) {
 
 	node2, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 11,
 		Endpoints: []EndpointConf{
 			EndpointUdpClient{"127.0.0.1:5600"},
@@ -319,6 +327,7 @@ func TestNodeSignature(t *testing.T) {
 		},
 		HeartbeatDisable: true,
 		InKey:            key2,
+		OutVersion:       V2,
 		OutSystemId:      10,
 		OutKey:           key1,
 	})
@@ -331,6 +340,7 @@ func TestNodeSignature(t *testing.T) {
 		},
 		HeartbeatDisable: true,
 		InKey:            key1,
+		OutVersion:       V2,
 		OutSystemId:      11,
 		OutKey:           key2,
 	})
@@ -383,6 +393,7 @@ func TestNodeRouting(t *testing.T) {
 
 	node1, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 10,
 		Endpoints: []EndpointConf{
 			EndpointUdpClient{"127.0.0.1:5600"},
@@ -393,6 +404,7 @@ func TestNodeRouting(t *testing.T) {
 
 	node2, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 11,
 		Endpoints: []EndpointConf{
 			EndpointUdpServer{"127.0.0.1:5600"},
@@ -404,6 +416,7 @@ func TestNodeRouting(t *testing.T) {
 
 	node3, err := NewNode(NodeConf{
 		Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+		OutVersion:  V2,
 		OutSystemId: 12,
 		Endpoints: []EndpointConf{
 			EndpointUdpServer{"127.0.0.1:5601"},
@@ -464,6 +477,7 @@ func TestNodeHeartbeat(t *testing.T) {
 	func() {
 		node1, err := NewNode(NodeConf{
 			Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+			OutVersion:  V2,
 			OutSystemId: 10,
 			Endpoints: []EndpointConf{
 				EndpointUdpServer{"127.0.0.1:5600"},
@@ -475,6 +489,7 @@ func TestNodeHeartbeat(t *testing.T) {
 
 		node2, err := NewNode(NodeConf{
 			Dialect:     MustDialect(3, []Message{&MessageHeartbeat{}}),
+			OutVersion:  V2,
 			OutSystemId: 11,
 			Endpoints: []EndpointConf{
 				EndpointUdpClient{"127.0.0.1:5600"},
@@ -507,6 +522,7 @@ func TestNodeStreamRequest(t *testing.T) {
 				&MessageHeartbeat{},
 				&MessageRequestDataStream{},
 			}),
+			OutVersion:  V2,
 			OutSystemId: 10,
 			Endpoints: []EndpointConf{
 				EndpointUdpServer{"127.0.0.1:5600"},
@@ -522,6 +538,7 @@ func TestNodeStreamRequest(t *testing.T) {
 				&MessageHeartbeat{},
 				&MessageRequestDataStream{},
 			}),
+			OutVersion:  V2,
 			OutSystemId: 10,
 			Endpoints: []EndpointConf{
 				EndpointUdpClient{"127.0.0.1:5600"},

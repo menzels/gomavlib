@@ -4,20 +4,22 @@ package main
 
 import (
 	"fmt"
-	"github.com/gswly/gomavlib"
-	"github.com/gswly/gomavlib/dialects/ardupilotmega"
+
+	"github.com/aler9/gomavlib"
+	"github.com/aler9/gomavlib/dialects/ardupilotmega"
 )
 
 func main() {
 	// create a node which
-	// - communicates with a TCP endpoint in server mode
+	// - communicates with an UDP endpoint in server mode.
 	// - understands ardupilotmega dialect
 	// - writes messages with given system id
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTcpServer{":5600"},
+			gomavlib.EndpointUdpServer{":5600"},
 		},
 		Dialect:     ardupilotmega.Dialect,
+		OutVersion:  gomavlib.V2, // change to V1 if you're unable to write to the target
 		OutSystemId: 10,
 	})
 	if err != nil {
@@ -25,6 +27,7 @@ func main() {
 	}
 	defer node.Close()
 
+	// print every message we receive
 	for evt := range node.Events() {
 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
 			fmt.Printf("received: id=%d, %+v\n", frm.Message().GetId(), frm.Message())

@@ -4,8 +4,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/gswly/gomavlib"
-	"github.com/gswly/gomavlib/dialects/ardupilotmega"
+
+	"github.com/aler9/gomavlib"
+	"github.com/aler9/gomavlib/dialects/ardupilotmega"
 )
 
 func main() {
@@ -18,6 +19,7 @@ func main() {
 			gomavlib.EndpointSerial{"/dev/ttyUSB0:57600"},
 		},
 		Dialect:     ardupilotmega.Dialect,
+		OutVersion:  gomavlib.V2, // change to V1 if you're unable to write to the target
 		OutSystemId: 10,
 	})
 	if err != nil {

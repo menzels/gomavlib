@@ -290,8 +290,8 @@ func (mp *dialectMessage) decode(buf []byte, isFrameV2 bool) (Message, error) {
 	msg := reflect.New(mp.elemType)
 
 	if isFrameV2 == true {
-		// in V2 buffer can be > message or < message
-		// in this case it must be filled with zeros to support empty-byte de-truncation
+		// in V2 buffer length can be > message or < message
+		// in this latter case it must be filled with zeros to support empty-byte de-truncation
 		// and extension fields
 		if len(buf) < int(mp.sizeExtended) {
 			buf = append(buf, bytes.Repeat([]byte{0x00}, int(mp.sizeExtended)-len(buf))...)
@@ -367,6 +367,8 @@ func (mp *dialectMessage) encode(msg Message, isFrameV2 bool) ([]byte, error) {
 	buf = start
 
 	// empty-byte truncation
+	// even with truncation, message length must be at least 1 byte
+	// https://github.com/mavlink/c_library_v2/blob/master/mavlink_helpers.h#L103
 	if isFrameV2 == true {
 		end := len(buf)
 		for end > 1 && buf[end-1] == 0x00 {

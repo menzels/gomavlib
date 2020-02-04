@@ -5,8 +5,9 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/gswly/gomavlib"
-	"github.com/gswly/gomavlib/dialects/ardupilotmega"
+
+	"github.com/aler9/gomavlib"
+	"github.com/aler9/gomavlib/dialects/ardupilotmega"
 )
 
 func main() {
@@ -20,13 +21,14 @@ func main() {
 		Reader:      inBuf,
 		Writer:      outBuf,
 		Dialect:     ardupilotmega.Dialect,
+		OutVersion:  gomavlib.V2, // change to V1 if you're unable to write to the target
 		OutSystemId: 10,
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	// parse buffer and obtain a frame
+	// read a message, encapsulated in a frame
 	frame, err := parser.Read()
 	if err != nil {
 		panic(err)
@@ -34,15 +36,12 @@ func main() {
 
 	fmt.Printf("decoded: %+v\n", frame)
 
-	// encode a frame
-	frame = &gomavlib.FrameV2{
-		Message: &ardupilotmega.MessageParamValue{
-			ParamId:    "test_parameter",
-			ParamValue: 123456,
-			ParamType:  ardupilotmega.MAV_PARAM_TYPE_UINT32,
-		},
-	}
-	err = parser.Write(frame, false)
+	// write a message
+	err = parser.WriteMessage(&ardupilotmega.MessageParamValue{
+		ParamId:    "test_parameter",
+		ParamValue: 123456,
+		ParamType:  ardupilotmega.MAV_PARAM_TYPE_UINT32,
+	})
 	if err != nil {
 		panic(err)
 	}

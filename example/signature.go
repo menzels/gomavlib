@@ -4,27 +4,37 @@ package main
 
 import (
 	"fmt"
-	"github.com/gswly/gomavlib"
-	"github.com/gswly/gomavlib/dialects/ardupilotmega"
+
+	"github.com/aler9/gomavlib"
+	"github.com/aler9/gomavlib/dialects/ardupilotmega"
 )
 
 func main() {
+	// initialize a 6-bytes key. A key can have up to 32 bytes.
+	key := gomavlib.NewKey([]byte("abcdef"))
+
 	// create a node which
-	// - communicates with a TCP endpoint in client mode
+	// - communicates with a serial port.
 	// - understands ardupilotmega dialect
 	// - writes messages with given system id
+	// - validates incoming messages via InKey
+	// - sign outgoing messages via OutKey
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: []gomavlib.EndpointConf{
-			gomavlib.EndpointTcpClient{"1.2.3.4:5600"},
+			gomavlib.EndpointSerial{"/dev/ttyUSB0:57600"},
 		},
 		Dialect:     ardupilotmega.Dialect,
+		OutVersion:  gomavlib.V2, // V2 is mandatory for signatures
 		OutSystemId: 10,
+		InKey:       key,
+		OutKey:      key,
 	})
 	if err != nil {
 		panic(err)
 	}
 	defer node.Close()
 
+	// print every message we receive
 	for evt := range node.Events() {
 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
 			fmt.Printf("received: id=%d, %+v\n", frm.Message().GetId(), frm.Message())
